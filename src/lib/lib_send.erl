@@ -24,6 +24,17 @@ all(Bin) ->
 	AllPs = ets:tab2list(?ETS_CLIENT),
 	send_raw_to_client(AllPs, Frame).
 
+els(Kind, Bin) ->
+	Frame = frame(Bin),
+	L1 = els:lsa(Kind),
+	F1 = fun({X}) ->
+		case ets:lookup(?ETS_CLIENT, X) of 
+			[] -> els:del(Kind, X);
+			CL -> gen_tcp:send(CL#ets_client.socket, Frame)
+		end 
+	end,
+	lists:foreach(F1, L1).
+
 send_raw_to_client([], _) -> ok;
 send_raw_to_client([H|T], Frame) ->
 	gen_tcp:send(H#ets_client.socket, Frame),

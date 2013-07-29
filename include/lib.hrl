@@ -12,3 +12,4 @@
 
 -define(ETS_VARS  , ets_vars).
 -define(ETS_CLIENT, ets_client).
+-define(ETS_ELS, ets_els).

@@ -37,4 +37,5 @@ start(normal, []) ->
 init_ets() ->
     ets:new(?ETS_VARS,   [named_table, public, set]),
     ets:new(?ETS_CLIENT, [named_table, public, set, {keypos, #ets_client.id}]),
+    ets:new(?ETS_ELS,   [named_table, public, set]),
     ok.
