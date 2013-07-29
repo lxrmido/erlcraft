@@ -3,7 +3,7 @@
 -include("lib.hrl").
 
 start() ->
-    start("mc.bilicraft.com", 25572).
+    start("mc.bilicraft.com", 25570).
 
 start(Host, Port) ->
     case gen_tcp:connect(Host, Port, [binary, {packet, 0}]) of
@@ -41,6 +41,7 @@ process_recv(Socket) ->
     end.
 handle_bin(Bin) ->
 	Str = erlang:binary_to_list(Bin),
+    lib_send:all(pack:pack(["console", Bin])),
 	?T("Bin", Str). 
 
 handle_cmd(Pid) ->

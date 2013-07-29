@@ -5,8 +5,8 @@
 -compile(export_all).
 
 -record(ja, {
-	host,  
-	port, 
+	host,
+	port,
 	action
 }).
 
@@ -81,5 +81,31 @@ parse(Socket) ->
     end.
 
 handle_bin(Bin) ->
-	Str = erlang:binary_to_list(Bin),
-	?T(Str). 
+    JS  = js_splits(Bin),
+    F = fun(X) ->
+        ?T("JA", X),
+        lib_send:all(X)
+    end,
+    lists:foreach(F, JS).
+
+js_splits(O) ->
+    lists:reverse(js_splits(O, [])).
+js_splits(<<>>, L) -> L;
+js_splits(B, L) ->
+    case js_split(B) of 
+        {J, R} -> js_splits(R, [J|L]);
+        fail   -> L
+    end.
+js_split(<<>>) -> fail;
+js_split(<<${, _/binary>> = O) ->
+    js_split(O, <<>>, 0, 0);
+js_split(<<_:8, O/binary>>) ->
+    js_split(O).
+js_split(R, N, LC, RC) when LC =:= RC andalso LC =/= 0 -> {<<${, N/binary, $}>>, R};
+js_split(<<>>, N, _, _) -> {N, <<>>};
+js_split(<<${, R/binary>>, N, LC, RC) ->
+    js_split(R, N, LC + 1, RC);
+js_split(<<$}, R/binary>>, N, LC, RC) ->
+    js_split(R, N, LC, RC + 1);
+js_split(<<X:8, R/binary>>, N, LC, RC) ->
+    js_split(R, <<N/binary, X:8>>, LC, RC).

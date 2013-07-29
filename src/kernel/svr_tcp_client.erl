@@ -3,6 +3,7 @@
 -include("lib.hrl").
 
 -record(client, {
+	gid = 0,
 	buffer = <<>>,
 	lines = [],
 	host = <<>>,
@@ -59,7 +60,17 @@ parse_packet_header(Socket, Client) ->
 					Client3#client.accept
 				)
 			),
-			parse_packet_msg(Socket, Client3)
+			PSend = spawn_link(fun() -> lib_send:proc(Socket) end),
+			EC = #ets_client{
+				p_recv = self(),
+				p_send = PSend,
+				socket = Socket
+			},
+			GId = user:guest(EC),
+			Client4 = Client3#client{
+				gid = GId
+			},
+			parse_packet_msg(Socket, Client4)
 	end.
 
 parse_packet_msg(Socket, Client) ->
@@ -69,7 +80,7 @@ parse_packet_msg(Socket, Client) ->
 			parse_packet_body(Socket, Client, Len);
 		Error ->
 			?T("ERROR", Error),
-			gen_tcp:close(Socket),
+			close(Client),
 			exit({unexpected_message, "normal_close"})
 	end.
 
@@ -89,15 +100,17 @@ parse_packet_body(Socket, Client, Len) ->
 			end;
 		Error ->
 			?T("ERROR", Error),
-			gen_tcp:close(Socket),
+			close(Client),
 			exit({unexpected_message, "normal_close"})
 	end.
 
 routing(M1, M2, MsgBody, Client) ->
-	MDB = <<"pt_", M1/binary>>,
+	MDB = <<"pp_", M1/binary>>,
 	MDS = binary_to_list(MDB),
 	MDA = list_to_atom(MDS),
-	MDA:handle(M2, MsgBody, Client).
+	ARG = pack:unpack(MsgBody),
+	MDA:handle(binary_to_list(M2), Client, ARG).
+
 
 async_recv(Sock, Length, Timeout) when is_port(Sock) ->
     case prim_inet:async_recv(Sock, Length, Timeout) of
@@ -153,6 +166,10 @@ calc_reply(Host, Accept) ->
 		"Sec-WebSocket-Location: ws://", Host/binary,"\r\n",
 		"\r\n"
 	>>.
+
+close(Client) ->
+	gen_tcp:close(Client#client.socket),
+	ets:delete(?ETS_CLIENT, Client#client.gid).
 
 send(Socket, Bin) ->
 	Frame = <<1:1, 0:3, 1:4, 0:1, (size(Bin)):7, Bin/binary>>,

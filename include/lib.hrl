@@ -4,8 +4,11 @@
 -define(I(X, Y), io:format("[INFO][~p][~s]:~p~n", [?MODULE, X, Y])).
 
 -record(ets_client, {
-	pid,
-	uid = 0,
-	username = <<>>,
+	id,
+	p_recv,
+	p_send,
 	socket
 }).
+
+-define(ETS_VARS  , ets_vars).
+-define(ETS_CLIENT, ets_client).
