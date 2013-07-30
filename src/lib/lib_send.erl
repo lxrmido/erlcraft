@@ -29,8 +29,8 @@ els(Kind, Bin) ->
 	L1 = els:lsa(Kind),
 	F1 = fun({X}) ->
 		case ets:lookup(?ETS_CLIENT, X) of 
-			[] -> els:del(Kind, X);
-			CL -> gen_tcp:send(CL#ets_client.socket, Frame)
+			[]   -> els:del(Kind, X);
+			[CL] -> gen_tcp:send(CL#ets_client.socket, Frame)
 		end 
 	end,
 	lists:foreach(F1, L1).

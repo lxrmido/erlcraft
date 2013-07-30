@@ -83,8 +83,9 @@ parse(Socket) ->
 handle_bin(Bin) ->
     JS  = js_splits(Bin),
     F = fun(X) ->
-        ?T("JA", X),
-        lib_send:all(X)
+        Y = lang:addslashes(X),
+        B = pack:pack(["ja", Y]),
+        lib_send:els(ctrl, B)
     end,
     lists:foreach(F, JS).
 

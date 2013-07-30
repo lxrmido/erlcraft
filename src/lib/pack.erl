@@ -55,7 +55,7 @@ pack([H|T], Bin) when is_list(H) ->
 pack([H|T], <<>>) when is_binary(H) ->
 	pack(T, H);
 pack([H|T], Bin) when is_binary(H) ->
-	B1 = <<Bin/binary, $,, H/binary>>,
+	B1 = <<Bin/binary, $,, $", H/binary, $">>,
 	pack(T, B1);
 pack([_|T], <<>>) ->
 	B1 = <<"null">>,

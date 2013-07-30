@@ -2,19 +2,6 @@
 -compile(export_all).
 -include("lib.hrl").
 
--record(client, {
-	gid = 0,
-	buffer = <<>>,
-	lines = [],
-	host = <<>>,
-	key = <<>>,
-	headers = [],
-	accept = <<>>,
-	uid = 0,
-	username = <<>>,
-	socket
-}).
-
 start_link() ->
 	{ok, proc_lib:spawn_link(?MODULE, init, [])}.
 
@@ -74,7 +61,7 @@ parse_packet_header(Socket, Client) ->
 	end.
 
 parse_packet_msg(Socket, Client) ->
-	Ref = async_recv(Socket, 2, 100000),
+	Ref = async_recv(Socket, 2, 1000000),
 	receive 
 		{inet_async, Socket, Ref, {ok, <<_Fin:1, _Rsv:3, _Opcode:4, _Mask:1, Len:7>>}} ->
 			parse_packet_body(Socket, Client, Len);
@@ -85,12 +72,12 @@ parse_packet_msg(Socket, Client) ->
 	end.
 
 parse_packet_body(Socket, Client, Len) ->
-	Ref = async_recv(Socket, Len + 4, 100000),
+	Ref = async_recv(Socket, Len + 4, 1000000),
 	receive 
 		{inet_async, Socket, Ref, {ok, Data}} ->
 			<<Masking:4/binary, Payload/binary>> = Data,
 			Line = unmask(Payload, Masking),
-			?T("Line", Line),
+			% ?T("Line", Line),
 			<<M1:4/binary, M2:4/binary, MsgBody/binary>> = Line,
 			case routing(M1, M2, MsgBody, Client) of 
 				{client, Client2} ->

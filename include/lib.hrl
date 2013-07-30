@@ -10,6 +10,19 @@
 	socket
 }).
 
+-record(client, {
+	gid = 0,
+	buffer = <<>>,
+	lines = [],
+	host = <<>>,
+	key = <<>>,
+	headers = [],
+	accept = <<>>,
+	uid = 0,
+	username = <<>>,
+	socket
+}).
+
 -define(ETS_VARS  , ets_vars).
 -define(ETS_CLIENT, ets_client).
 -define(ETS_ELS, ets_els).
