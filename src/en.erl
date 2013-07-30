@@ -1,6 +1,5 @@
 -module(en).
 -compile(export_all).
-
 -define(SERVER_APPS, [sasl, server]).
 
 s()->
