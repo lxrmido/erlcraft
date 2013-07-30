@@ -12,7 +12,7 @@ s()->
 q() ->
     stop_applications(?SERVER_APPS).
 
-%%############辅助调用函数##############
+
 manage_applications(Iterate, Do, Undo, SkipError, ErrorTag, Apps) ->
     Iterate(fun (App, Acc) ->
                 case Do(App) of
